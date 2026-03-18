@@ -85,19 +85,14 @@ def _send_photos(telegram_id: str, front_url, rear_url) -> None:
         except Exception as e:
             print(f"[Telegram] sendPhoto ({label}) exception: {e}")
 
-
 def dispatch_alert(alert, contacts) -> bool:
     triggered_at = alert.created_at.strftime("%Y-%m-%d %H:%M UTC")
     any_success  = False
 
-    print(f"[Telegram] dispatch_alert called")
-    print(f"[Telegram] token loaded: {'YES' if settings.TELEGRAM_BOT_TOKEN else 'NO — TOKEN MISSING'}")
-
     for contact in contacts:
-        print(f"[Telegram] processing contact: {contact.name} | telegram_id: '{contact.telegram_id}'")
-
-        if not contact.telegram_id:
-            print(f"[Telegram] skipping — no telegram_id")
+        # Only dispatch to verified contacts
+        if not contact.telegram_verified:
+            print(f"[Telegram] skipping {contact.name} — not verified")
             continue
 
         try:
@@ -111,11 +106,9 @@ def dispatch_alert(alert, contacts) -> bool:
                 front_photo_url=alert.front_photo_url,
                 rear_photo_url=alert.rear_photo_url,
             )
-            print(f"[Telegram] contact {contact.name} — success: {success}")
             if success:
                 any_success = True
         except Exception as e:
             print(f"[Telegram] unexpected error for {contact.name}: {e}")
 
-    print(f"[Telegram] dispatch finished — any_success: {any_success}")
     return any_success
