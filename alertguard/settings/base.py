@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'apps.alerts',
     'apps.users',
     'apps.contacts',
+    'apps.telegram_webhook',
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,7 @@ CLOUDINARY_API_KEY    = os.environ.get('CLOUDINARY_API_KEY', '')
 CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET', '')
 
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', '')
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
