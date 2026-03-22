@@ -8,7 +8,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
 
     class Meta:
-        model = User
+        model  = User
         fields = ('email', 'full_name', 'password')
 
     def create(self, validated_data):
@@ -16,7 +16,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    invite_link = serializers.ReadOnlyField()
+
     class Meta:
-        model = User
-        fields = ('id', 'email', 'full_name', 'created_at')
-        read_only_fields = ('id', 'email', 'created_at')
+        model  = User
+        fields = (
+            'id',
+            'email',
+            'full_name',
+            'telegram_id',
+            'telegram_verified',
+            'invite_link',
+            'created_at',
+        )
+        read_only_fields = (
+            'id',
+            'email',
+            'telegram_id',
+            'telegram_verified',
+            'invite_link',
+            'created_at',
+        )
