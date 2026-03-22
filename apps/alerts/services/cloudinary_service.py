@@ -15,7 +15,7 @@ def configure_cloudinary():
 def upload_photo(file, folder: str = "alertguard/alerts") -> str | None:
     """
     Upload a photo file to Cloudinary.
-    Returns the secure URL string on success, None on failure.
+    Returns the secure URL on success, None on failure.
     """
     try:
         configure_cloudinary()
@@ -23,6 +23,7 @@ def upload_photo(file, folder: str = "alertguard/alerts") -> str | None:
             file,
             folder=folder,
             resource_type="image",
+            timeout=30,        # 30 second timeout per upload
         )
         return result.get("secure_url")
     except Exception as e:

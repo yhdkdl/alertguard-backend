@@ -3,9 +3,12 @@ from .models import Alert
 
 
 class AlertCreateSerializer(serializers.ModelSerializer):
-    """Used for incoming POST requests from Flutter."""
-    front_photo = serializers.ImageField(write_only=True, required=False)
-    rear_photo  = serializers.ImageField(write_only=True, required=False)
+    front_photo     = serializers.ImageField(write_only=True, required=False)
+    rear_photo      = serializers.ImageField(write_only=True, required=False)
+    idempotency_key = serializers.CharField(
+                        max_length=100,
+                        required=False,
+                        write_only=True)
 
     class Meta:
         model  = Alert
@@ -16,6 +19,7 @@ class AlertCreateSerializer(serializers.ModelSerializer):
             'front_photo',
             'rear_photo',
             'is_test',
+            'idempotency_key',
         )
 
     def validate_trigger_type(self, value):
@@ -28,8 +32,6 @@ class AlertCreateSerializer(serializers.ModelSerializer):
 
 
 class AlertResponseSerializer(serializers.ModelSerializer):
-    """Used for outgoing responses back to Flutter."""
-
     class Meta:
         model  = Alert
         fields = (

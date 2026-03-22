@@ -1,7 +1,5 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-
-from apps import contacts
 from .models import Alert
 from .serializers import AlertCreateSerializer, AlertResponseSerializer
 from .services.cloudinary_service import upload_photo
@@ -16,9 +14,27 @@ class AlertCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        data = serializer.validated_data
+        data            = serializer.validated_data
+        idempotency_key = data.get('idempotency_key')
 
-        # 1. Upload photos to Cloudinary (each independently)
+        # ── Idempotency check ──────────────────────────────────────
+        # If we already processed this exact alert, return the original
+        # This handles Flutter retrying after a timeout
+        if idempotency_key:
+            existing = Alert.objects.filter(
+                user=request.user,
+                idempotency_key=idempotency_key
+            ).first()
+
+            if existing:
+                print(f'[Idempotency] Duplicate request — '
+                      f'returning existing alert id: {existing.id}')
+                return Response(
+                    AlertResponseSerializer(existing).data,
+                    status=status.HTTP_200_OK  # 200 not 201 — not newly created
+                )
+
+        # ── Upload photos ──────────────────────────────────────────
         front_photo_url = None
         rear_photo_url  = None
 
@@ -28,7 +44,7 @@ class AlertCreateView(generics.CreateAPIView):
         if data.get('rear_photo'):
             rear_photo_url = upload_photo(data['rear_photo'])
 
-        # 2. Save the alert to the database with status 'pending'
+        # ── Save alert ─────────────────────────────────────────────
         alert = Alert.objects.create(
             user=request.user,
             trigger_type=data['trigger_type'],
@@ -37,36 +53,25 @@ class AlertCreateView(generics.CreateAPIView):
             front_photo_url=front_photo_url,
             rear_photo_url=rear_photo_url,
             is_test=data.get('is_test', False),
+            idempotency_key=idempotency_key,
             status='pending',
         )
 
-        # 3. Get contacts to notify
+        # ── Dispatch Telegram ──────────────────────────────────────
         contacts = request.user.emergency_contacts.all()
-             
-            
-        # 4. In test mode, only notify the user themselves
-        if alert.is_test:
-            from apps.contacts.models import EmergencyContact
-            # Create a temporary fake contact using the user's own telegram info
-            # (handled in telegram_service by checking is_test on alert)
-            dispatched = False
-        else:
-            dispatched = dispatch_alert(alert, contacts)
 
-        # 5. Update alert status based on dispatch result
         if alert.is_test:
             alert.status = 'sent'
-        elif dispatched:
-            alert.status = 'sent'
         else:
-            alert.status = 'failed'
-            
+            dispatched   = dispatch_alert(alert, contacts)
+            alert.status = 'sent' if dispatched else 'failed'
 
         alert.save()
 
-        # 6. Return the alert using the response serializer
-        response_serializer = AlertResponseSerializer(alert)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            AlertResponseSerializer(alert).data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class AlertListView(generics.ListAPIView):

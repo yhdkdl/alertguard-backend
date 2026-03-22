@@ -22,16 +22,39 @@ class Alert(models.Model):
         related_name='alerts'
     )
     trigger_type    = models.CharField(max_length=20, choices=TRIGGER_CHOICES)
-    latitude        = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude       = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude        = models.DecimalField(
+                        max_digits=9, decimal_places=6,
+                        null=True, blank=True)
+    longitude       = models.DecimalField(
+                        max_digits=9, decimal_places=6,
+                        null=True, blank=True)
     front_photo_url = models.URLField(blank=True, null=True)
     rear_photo_url  = models.URLField(blank=True, null=True)
-    status          = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status          = models.CharField(
+                        max_length=10,
+                        choices=STATUS_CHOICES,
+                        default='pending')
     is_test         = models.BooleanField(default=False)
+
+    # Idempotency — prevents duplicate alerts on retry
+    # Unique per user so two users can have the same key without conflict
+    idempotency_key = models.CharField(
+                        max_length=100,
+                        null=True,
+                        blank=True)
+
     created_at      = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
+        # Unique together: one key per user — not globally unique
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'idempotency_key'],
+                condition=models.Q(idempotency_key__isnull=False),
+                name='unique_alert_idempotency_key_per_user'
+            )
+        ]
 
     def __str__(self):
         return f"Alert by {self.user.email} at {self.created_at}"
