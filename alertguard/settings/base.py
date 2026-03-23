@@ -18,14 +18,20 @@ INSTALLED_APPS = [
     # Third party
     'rest_framework',
     'rest_framework_simplejwt',
+    
+    'corsheaders',
     # Local
     'apps.alerts',
     'apps.users',
     'apps.contacts',
     'apps.telegram_webhook',
+    'apps.core',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
