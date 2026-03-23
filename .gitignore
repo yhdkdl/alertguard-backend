@@ -26,6 +26,15 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+<<<<<<< HEAD
+=======
+#production
+*.pyc
+__pycache__/
+staticfiles/
+media/
+
+>>>>>>> develop
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -204,4 +213,8 @@ cython_debug/
 # Marimo
 marimo/_static/
 marimo/_lsp/
+<<<<<<< HEAD
 __marimo__/
+=======
+__marimo__/
+>>>>>>> develop
