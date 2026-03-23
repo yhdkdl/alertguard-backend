@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: alertguard-api
+    runtime: python
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate
+    startCommand: gunicorn alertguard.wsgi:application --workers 2 --timeout 120
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: alertguard.settings.production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
