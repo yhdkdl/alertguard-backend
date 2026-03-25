@@ -343,6 +343,3 @@ Every push to `main`:
 
 ---
 
-## License
-
-MIT License — see LICENSE file.
