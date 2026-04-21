@@ -5,7 +5,7 @@
 **Live API:** `https://alertguard-api.onrender.com`  
 **Health Check:** `https://alertguard-api.onrender.com/health/`
 
----
+
 
 ## Overview
 
@@ -16,7 +16,7 @@ emergency contacts via Telegram.
 This repository contains the backend API built with Django REST Framework,
 deployed on Render with a Supabase PostgreSQL database.
 
----
+
 
 ## Tech Stack
 
